@@ -1,6 +1,6 @@
 #etl_project.main.py
 import random
-import etl_project.file as r
+import etl_project.csv_handler as h
 from etl_project import filter_func as f
 
 def do_list(n):
@@ -19,7 +19,7 @@ def sqr_list(my_list):
         new_list.append(i*i)
     return new_list
 
-def ex1():
+def process_sample_data():
     my_list = do_list(10)
     my_even_list = list(filter(is_even, my_list))
     my_sqr_list = sqr_list(my_even_list)
@@ -27,29 +27,29 @@ def ex1():
     print(my_even_list)
     print(my_sqr_list)
 
-def ex2():
-    my_list1 = r.get_rows('tested.csv',5)
-    print(my_list1)
-    print(r.get_len('tested.csv'))
+def process_csv_data():
+    passenger_data = h.get_rows('tested.csv',5)
+    print(passenger_data)
+    print(h.get_len('tested.csv'))
     filters = [
         (f.minValue,'Age', 30),
         (f.maxValue,'Fare', 7)
     ]
-    my_list2 = r.get_rows('tested.csv',filters=filters)
-    print(my_list2)
-    my_list3 = r.get_rows('tested.csv')
-    for row in my_list3:
+    filtered_passenger_data = h.get_rows('tested.csv',filters=filters)
+    print(filtered_passenger_data)
+    fixed_passenger_data = h.get_rows('tested.csv')
+    for row in fixed_passenger_data:
         try:
             fare = float(row['Fare'])
             row['col1'] = fare*0.2
         except:
             row['col1'] = 0
-    print(my_list3)
-    r.write_file('tested111.csv',my_list3)    
+    print(fixed_passenger_data)
+    h.write_file('tested111.csv',fixed_passenger_data)    
 
 def main():
-    ex1()
-    ex2()
+    process_sample_data()
+    process_csv_data()
 
 
 
