@@ -11,8 +11,7 @@ def do_list(n):
     return my_list
 
 def is_even(num):
-    if num % 2 == 0:
-        return num
+    return num % 2 == 0
 
 def sqr_list(my_list):
     new_list=[]
@@ -49,8 +48,8 @@ def ex2():
     r.write_file('tested111.csv',my_list3)    
 
 def main():
- ex1()
- ex2()
+    ex1()
+    ex2()
 
 
 
