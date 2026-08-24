@@ -29,14 +29,14 @@ def process_sample_data():
 
 def process_csv_data():
     passenger_data = h.get_rows('tested.csv',5)
-    print(passenger_data)
+    # print(passenger_data)
     print(h.get_len('tested.csv'))
     filters = [
         (f.minValue,'Age', 30),
         (f.maxValue,'Fare', 7)
     ]
     filtered_passenger_data = h.get_rows('tested.csv',filters=filters)
-    print(filtered_passenger_data)
+    # print(filtered_passenger_data)
     fixed_passenger_data = h.get_rows('tested.csv')
     for row in fixed_passenger_data:
         try:
@@ -44,13 +44,22 @@ def process_csv_data():
             row['col1'] = fare*0.2
         except:
             row['col1'] = 0
-    print(fixed_passenger_data)
+    # print(fixed_passenger_data)
     h.write_file('tested111.csv',fixed_passenger_data)    
+
+def process_df():
+    try:
+        df = h.read_csv_to_df('tested1.csv')
+        if df is not None:
+            df = f.dfMinValue(df,'Age',30)
+        print(df)
+    except:
+        print("Ошибка выполнения")
 
 def main():
     process_sample_data()
     process_csv_data()
-
+    process_df()
 
 
 if __name__=='__main__':

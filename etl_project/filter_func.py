@@ -35,3 +35,7 @@ def eqValue(reader, name, value ):
             return False
     reader = filter(check, reader)
     return reader
+
+def dfMinValue(df, name, value ):
+    df = df[df[name] > value]
+    return df

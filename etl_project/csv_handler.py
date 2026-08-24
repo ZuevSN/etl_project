@@ -1,6 +1,8 @@
 #etl_project.reader.py
 import csv
 from itertools import islice
+import pandas as pd
+from pathlib import Path
 
 def write_file(path, my_list):
     with open(path, 'w', newline='', encoding='utf-8') as f:
@@ -29,3 +31,15 @@ def get_rows(path, count=0, filters=None):
 def get_len(path):
     with open(path, 'r', encoding='utf-8') as f:
         return sum(1 for _ in f) - 1
+
+def read_csv_to_df(path_to_file):
+    path = Path(path_to_file)
+    if not path.exists():
+        raise ValueError(f'Некорректный путь до файла')
+    extension = path.rsplit('.')[-1]
+    match extension:
+        case 'csv':
+            df = pd.read_csv(path)
+        case _:
+            raise KeyError(f'Файл с расширением {extension} не обрабатывается')
+    return df
