@@ -1,5 +1,7 @@
 #etl_project.filter_func.py
 
+import pandas as pd
+
 def minValue(reader, name, value ):
     def check(row):
         raw_value = row.get(name, '').strip()
@@ -37,5 +39,16 @@ def eqValue(reader, name, value ):
     return reader
 
 def dfMinValue(df, name, value ):
-    df = df[df[name] > value]
-    return df
+    if name not in df.columns:
+        raise KeyError(f"Нет колонки '{name}'")
+    return df[pd.to_numeric(df[name], errors='coerce') > value]
+
+def dfMaxValue(df, name, value ):
+    if name not in df.columns:
+        raise KeyError(f"Нет колонки '{name}'")
+    return df[pd.to_numeric(df[name], errors='coerce') < value]
+
+def dfEqValue(df, name, value ):
+    if name not in df.columns:
+        raise KeyError(f"Нет колонки '{name}'")
+    return df[pd.to_numeric(df[name], errors='coerce') == value]

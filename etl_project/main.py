@@ -47,19 +47,11 @@ def process_csv_data():
     # print(fixed_passenger_data)
     h.write_file('tested111.csv',fixed_passenger_data)    
 
-def process_df():
-    try:
-        df = h.read_csv_to_df('tested1.csv')
-        if df is not None:
-            df = f.dfMinValue(df,'Age',30)
-        print(df)
-    except:
-        print("Ошибка выполнения")
+
 
 def main():
     process_sample_data()
     process_csv_data()
-    process_df()
 
 
 if __name__=='__main__':

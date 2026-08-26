@@ -1,4 +1,4 @@
-#etl_project.reader.py
+#etl_project.csv_handler.py
 import csv
 from itertools import islice
 import pandas as pd
@@ -35,11 +35,7 @@ def get_len(path):
 def read_csv_to_df(path_to_file):
     path = Path(path_to_file)
     if not path.exists():
-        raise ValueError(f'Некорректный путь до файла')
-    extension = path.rsplit('.')[-1]
-    match extension:
-        case 'csv':
-            df = pd.read_csv(path)
-        case _:
-            raise KeyError(f'Файл с расширением {extension} не обрабатывается')
-    return df
+        raise FileNotFoundError(f'Файл не найден')
+    if path.suffix.lower()!='.csv':
+        raise ValueError(f'Формат отличается от ожидаемого csv')
+    return pd.read_csv(path)
