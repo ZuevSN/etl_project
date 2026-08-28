@@ -6,11 +6,16 @@ import etl_project.csv_handler as h
 from etl_project import filter_func as f
 from etl_project import db_loader
 from etl_project.decorators import isolated_process
+from etl_project.config import AppConfig
+
+DEFAULTS={}
+
+conf = AppConfig(DEFAULTS)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s | %(name)-25s | %(levelname)-8s | %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    level=conf.get('LEVEL_LOG'),
+    format=conf.get('FORMAT_LOG'),
+    datefmt=conf.get('DATE_FMT')
 )
 
 logger = logging.getLogger(__name__)
@@ -67,7 +72,7 @@ def main():
     logger.info('Запуск ETL приложения')
     process_sample_data()
     process_csv_data()
-    db_loader.loader()
+    db_loader.loader(conf.get('DATABASE_URL'))
     print("конец")
     logger.info('Остановка ETL приложения')
 

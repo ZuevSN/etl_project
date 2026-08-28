@@ -9,11 +9,11 @@ from etl_project.decorators import isolated_process
 logger = logging.getLogger(__name__)
 
 # Строка подключения: dialect+driver://username:password@host:port/database
-DATABASE_URL = "postgresql+psycopg2://dev:devpassword@localhost:5432/etl_db"
-engine = create_engine(DATABASE_URL)
+
+
 
 @isolated_process("Тест подключения к базе")
-def test_connection():
+def test_connection(engine):
     try:
         with engine.connect() as connection:
             logger.info("Успешное подключение к PostgreSQL!")
@@ -24,7 +24,7 @@ def test_connection():
         raise Exception(f"Ошибка подключения к БД") from e
 
 @isolated_process("Обработка и загрузка файла в базу")
-def process_df():
+def process_df(engine):
     df = h.read_csv_to_df('tested.csv')
     df = f.dfEqValue(df,'Age',30)
     df['Tax'] = df['Fare'].astype(float) * 0.2
@@ -34,9 +34,10 @@ def process_df():
     return df
 
 
-def loader():
-    test_connection()
-    process_df()
+def loader(DATABASE_URL):
+    engine = create_engine(DATABASE_URL)
+    test_connection(engine)
+    process_df(engine)
 
 
 if __name__ == "__main__":
