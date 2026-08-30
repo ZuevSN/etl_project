@@ -13,9 +13,24 @@ pandas = "^3.0.5"
 python-dotenv = "^1.2.3"
 
 
+[tool.poetry.group.dev.dependencies]
+flake8 = "^7.3.0"
+black = "^26.5.1"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 start = "etl_project.main:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+exclude = '''
+/(
+    \.git
+    | \.venv
+    | __pycache__
+)/
+'''

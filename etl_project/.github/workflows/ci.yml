@@ -1,0 +1,45 @@
+name: CI Pipeine
+
+on:
+  push:
+    branches: [ "main" ]
+  pull request:
+    branches: [ "main" ]
+
+jobs:
+  lint-and-build:
+    name: Lint and Build Docker Image
+    runs-on: ubuntu-latest
+
+    steps:
+      # скачивание репозитория
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # установка Python 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # установка Poetry
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      
+      # установка зависимостей
+      - name: Install dependencies
+        run : poetry install --no-interaction --no-root 
+
+      # проверка форматирования кода
+      - name: Lint with Black
+        run: poetry run black --check .
+
+      # проверка стиля кода
+      - name: Lint with Flake8
+        run: poetry run flake8 .
+
+      # сборка Docker-образа
+      - name: Build Docker Image
+        run docker build -t etl_project_test .  
