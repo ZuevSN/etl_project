@@ -25,16 +25,19 @@ def test_connection(engine):
 
 @isolated_process("Обработка и загрузка файла в базу")
 def process_df(engine):
-    df = h.read_csv_to_df('tested.csv')
-    df = f.dfEqValue(df,'Age',30)
-    df['Tax'] = df['Fare'].astype(float) * 0.2
-    print(df)
-    df.to_sql(name='processed_data', con=engine,
-              if_exists='replace',index=False)
-    return df
+    if test_connection(engine):
+        df = h.read_csv_to_df('tested.csv')
+        df = f.dfEqValue(df,'Age',30)
+        df['Tax'] = df['Fare'].astype(float) * 0.2
+        df.to_sql(name='processed_data', con=engine,
+                if_exists='replace',index=False)
+        return df
+    return
 
-
+@isolated_process("Загрузчик")
 def loader(DATABASE_URL):
+    if not DATABASE_URL:
+        raise ValueError("Отсутствует переменная окружения DATABASE_URL")
     engine = create_engine(DATABASE_URL)
     test_connection(engine)
     process_df(engine)

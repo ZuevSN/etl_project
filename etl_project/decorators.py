@@ -17,8 +17,8 @@ def isolated_process(process_name: str):
                 logger.info(f'Завершение процесса: {process_name}')
                 return result
             except Exception as e:
-                logger.exception(f'{type(e).__name__}: {e}')
-                logger.error(f'Процесс {process_name} прерван. Приложение продолжило работу')
+                #logger.exception(f'{type(e).__name__}: {e}')
+                logger.error(f'Процесс {process_name} прерван.{type(e).__name__}: {e}. Приложение продолжило работу')
             return None
         return wrapper
     return decorator

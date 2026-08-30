@@ -47,33 +47,29 @@ def process_sample_data():
 
 @isolated_process("Загрузка, обработка, выгрузка csv")
 def process_csv_data():
-    passenger_data = h.get_rows('tested.csv',5)
-    # print(passenger_data)
     logger.info(h.get_len('tested.csv'))
     filters = [
         (f.minValue,'Age', 30),
         (f.maxValue,'Fare', 7)
     ]
     filtered_passenger_data = h.get_rows('tested.csv',filters=filters)
-    # print(filtered_passenger_data)
+    h.write_file('filtered_tested.csv',filtered_passenger_data) 
     fixed_passenger_data = h.get_rows('tested.csv')
     for row in fixed_passenger_data:
-        try:
-            fare = float(row['Fare'])
-            row['col1'] = fare*0.2
-        except:
-            row['col1'] = 0
-    # print(fixed_passenger_data)
+        fare = to_float(row['Fare'])
+        row['Tax'] = fare*0.2
     h.write_file('tested111.csv',fixed_passenger_data)    
 
-
+def to_float(value):
+    return value if isinstance(value,(float,int)) and not isinstance(value,bool) else 0
+    
 
 def main():
     logger.info('Запуск ETL приложения')
     process_sample_data()
     process_csv_data()
     db_loader.loader(conf.get('DATABASE_URL'))
-    print("конец")
+    process_sample_data()
     logger.info('Остановка ETL приложения')
 
 
