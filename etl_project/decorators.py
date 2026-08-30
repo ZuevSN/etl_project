@@ -21,7 +21,7 @@ def isolated_process(process_name: str):
                 # logger.exception(f'{type(e).__name__}: {e}')
                 logger.error(
                     f"Процесс {process_name} прерван.{type(e).__name__}: {e}. "
-                    "Приложение продолжило работу"
+                    "Приложение продолжило работу."
                 )
             return None
 
