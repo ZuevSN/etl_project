@@ -19,7 +19,6 @@ class AppConfig:
         """По умолчанию защищенные переменные BASE_DIR, LOG_FILE и ENV_FILE"""
         self.logger = logger
         self._params = {}
-        self._defaults = {}
         self._defaults = DEFAULTS_CONFIG
         self._defaults.update(defaults or {})
         self._setup_logging_stream()

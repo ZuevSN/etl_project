@@ -12,12 +12,6 @@ DEFAULTS={}
 
 conf = AppConfig(DEFAULTS)
 
-logging.basicConfig(
-    level=conf.get('LEVEL_LOG'),
-    format=conf.get('FORMAT_LOG'),
-    datefmt=conf.get('DATE_FMT')
-)
-
 logger = logging.getLogger(__name__)
 
 def do_list(n):
@@ -69,7 +63,6 @@ def main():
     process_sample_data()
     process_csv_data()
     db_loader.loader(conf.get('DATABASE_URL'))
-    process_sample_data()
     logger.info('Остановка ETL приложения')
 
 
