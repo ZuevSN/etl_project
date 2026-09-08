@@ -37,8 +37,9 @@ def get_len(path):
         return sum(1 for _ in f) - 1
 
 
-def read_csv_to_df(path_to_file):
-    path = Path(path_to_file)
+def read_csv_to_df(file_path: str) ->pd.DataFrame:
+    path = Path(file_path)
+    print(f'путь до файла {path}')
     if not path.exists():
         raise FileNotFoundError("Файл не найден")
     if path.suffix.lower() != ".csv":

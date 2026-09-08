@@ -67,7 +67,10 @@ def main():
     logger.info("Запуск ETL приложения")
     process_sample_data()
     process_csv_data()
-    db_loader.loader(conf.get("DATABASE_URL"))
+    db_loader.loader(
+        conf.get("DATABASE_URL"),
+        conf.get("csv_file")
+    )
     logger.info("Остановка ETL приложения")
 
 

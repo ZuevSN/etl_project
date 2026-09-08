@@ -19,26 +19,29 @@ def test_connection(engine):
             # Простой тестовый запрос
             result = connection.execute(text("SELECT version();"))
             logger.info(result.fetchone()[0])
+            return True
     except Exception as e:
         raise Exception("Ошибка подключения к БД") from e
 
 
 @isolated_process("Обработка и загрузка файла в базу")
-def process_df(engine):
-    df = h.read_csv_to_df("tested.csv")
+def process_df(engine, csv_path: str):
+    df = h.read_csv_to_df(csv_path)
     df = f.dfEqValue(df, "Age", 30)
     df["Tax"] = df["Fare"].astype(float) * 0.2
+    logger.info("Данные подготовлены для загрузки")
     df.to_sql(name="processed_data", con=engine, if_exists="replace", index=False)
+    logger.info("данные загружены")
     return df
 
 
 @isolated_process("Загрузчик")
-def loader(DATABASE_URL):
+def loader(DATABASE_URL: str, csv_path: str):
     if not DATABASE_URL:
         raise ValueError("Отсутствует переменная окружения DATABASE_URL")
     engine = create_engine(DATABASE_URL)
     if test_connection(engine):
-        process_df(engine)
+        process_df(engine, csv_path)
 
 
 if __name__ == "__main__":

@@ -8,6 +8,11 @@
          - "5432:5432"
        volumes:
          - postgres_data:/var/lib/postgresql/data
+       networks:
+         - etl_network
 
    volumes:
      postgres_data:
+   networks:
+     etl_network:
+       name: etl_network
