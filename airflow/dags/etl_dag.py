@@ -5,7 +5,9 @@ import sys
 sys.path.insert(0,'/opt/airflow')
 
 from airflow import DAG
+from airflow.models import Variable, Connection
 from airflow.operators.python import PythonOperator
+from airflow.hooks.base import BaseHook
 
 from etl_project.db_loader import loader
 
@@ -14,14 +16,16 @@ def run_loader():
     from pathlib import Path
 
     # указываем путь до файла
-    project_dir = Path('/opt/airflow/etl_project')
-    csv_path = project_dir.parent  / 'tested.csv'
-    print(csv_path)
-    if not csv_path.exists():
-        raise FileNotFoundError(f"CSV файл не найден: {csv_path}")
+    #project_dir = Path('/opt/airflow/etl_project')
+    #csv_path = project_dir.parent  / 'tested.csv'
+    csv_path = Variable.get('etl_csv_path')
+    conn = BaseHook.get_connection('postgres_etl')
+    db_url = f'postgresql+psycopg2://{conn.login}:{conn.password}:@{conn.host}:{conn.port}/{conn.schema}'
+    # if not csv_path.exists():
+    #    raise FileNotFoundError(f"CSV файл не найден: {csv_path}")
 
     # ВАЖНО: используем имя контейнера PostgreSQL, а не localhost!
-    db_url = "postgresql+psycopg2://dev:devpassword@etl_postgres:5432/etl_db"
+    # db_url = "postgresql+psycopg2://dev:devpassword@etl_postgres:5432/etl_db"
     loader(db_url, csv_path = str(csv_path))
 
 with DAG(
