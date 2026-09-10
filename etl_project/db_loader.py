@@ -5,6 +5,7 @@ import etl_project.csv_handler as h
 from etl_project import filter_func as f
 import logging
 from etl_project.decorators import isolated_process
+from etl_project.models import ETLContext
 
 logger = logging.getLogger(__name__)
 
@@ -25,23 +26,20 @@ def test_connection(engine):
 
 
 @isolated_process("Обработка и загрузка файла в базу")
-def process_df(engine, csv_path: str):
-    df = h.read_csv_to_df(csv_path)
+def process_df(ctx):
+    df = h.read_csv_to_df(ctx.csv_path)
     df = f.dfEqValue(df, "Age", 30)
     df["Tax"] = df["Fare"].astype(float) * 0.2
     logger.info("Данные подготовлены для загрузки")
-    df.to_sql(name="processed_data", con=engine, if_exists="replace", index=False)
+    df.to_sql(name="processed_data", con=ctx.engine, if_exists="replace", index=False)
     logger.info("данные загружены")
     return df
 
 
 @isolated_process("Загрузчик")
-def loader(DATABASE_URL: str, csv_path: str):
-    if not DATABASE_URL:
-        raise ValueError("Отсутствует переменная окружения DATABASE_URL")
-    engine = create_engine(DATABASE_URL)
-    if test_connection(engine):
-        process_df(engine, csv_path)
+def loader(ctx):
+    if test_connection(ctx.engine):
+        process_df(ctx)
 
 
 if __name__ == "__main__":

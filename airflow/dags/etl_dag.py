@@ -1,3 +1,4 @@
+# airflow.dags.etl_dag.py
 from datetime import datetime
 import sys
 
@@ -8,6 +9,9 @@ from airflow import DAG
 from airflow.models import Variable, Connection
 from airflow.operators.python import PythonOperator
 from airflow.hooks.base import BaseHook
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+import etl_project.models as m
+from sqlalchemy import create_engine
 
 from etl_project.db_loader import loader
 
@@ -19,14 +23,22 @@ def run_loader():
     #project_dir = Path('/opt/airflow/etl_project')
     #csv_path = project_dir.parent  / 'tested.csv'
     csv_path = Variable.get('etl_csv_path')
-    conn = BaseHook.get_connection('postgres_etl')
-    db_url = f'postgresql+psycopg2://{conn.login}:{conn.password}:@{conn.host}:{conn.port}/{conn.schema}'
+
+    hook = PostgresHook(postgres_conn_id='etl_postgres')
+    engine = hook.get_sqlalchemy_engine()
+    try:
+    #db_url = f'postgresql+psycopg2://{conn.login}:{conn.password}:@{conn.host}:{conn.port}/{conn.schema}'
+        ctx = m.ETLContext(engine=engine, csv_path=csv_path)
+
     # if not csv_path.exists():
     #    raise FileNotFoundError(f"CSV файл не найден: {csv_path}")
 
     # ВАЖНО: используем имя контейнера PostgreSQL, а не localhost!
     # db_url = "postgresql+psycopg2://dev:devpassword@etl_postgres:5432/etl_db"
-    loader(db_url, csv_path = str(csv_path))
+    ##loader(db_url, csv_path = str(csv_path))
+        loader(ctx)
+    finally:
+        engine.dispose()
 
 with DAG(
     dag_id='etl_pipeline',

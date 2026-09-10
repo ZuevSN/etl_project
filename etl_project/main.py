@@ -5,8 +5,10 @@ import random
 import etl_project.csv_handler as h
 from etl_project import filter_func as f
 from etl_project import db_loader
+import etl_project.models as m
 from etl_project.decorators import isolated_process
 from etl_project.config import AppConfig
+from sqlalchemy import create_engine
 
 DEFAULTS = {}
 
@@ -46,11 +48,13 @@ def process_sample_data():
 
 @isolated_process("Загрузка, обработка, выгрузка csv")
 def process_csv_data():
-    logger.info(h.get_len("tested.csv"))
+    path = f'{conf.get("BASE_DIR")}\\{conf.get("csv_file")}'
+    print(f'обычная обработка файла {path}')
+    logger.info(h.get_len(path))
     filters = [(f.minValue, "Age", 30), (f.maxValue, "Fare", 7)]
-    filtered_passenger_data = h.get_rows("tested.csv", filters=filters)
+    filtered_passenger_data = h.get_rows(path, filters=filters)
     h.write_file("filtered_tested.csv", filtered_passenger_data)
-    fixed_passenger_data = h.get_rows("tested.csv")
+    fixed_passenger_data = h.get_rows(path)
     for row in fixed_passenger_data:
         fare = to_float(row["Fare"])
         row["Tax"] = fare * 0.2
@@ -67,10 +71,14 @@ def main():
     logger.info("Запуск ETL приложения")
     process_sample_data()
     process_csv_data()
-    db_loader.loader(
-        conf.get("DATABASE_URL"),
-        conf.get("csv_file")
-    )
+    path = f'{conf.get("BASE_DIR")}\\{conf.get("csv_file")}'
+    url = conf.get("DATABASE_URL")
+    if not url:
+        raise ValueError("Отсутствует переменная окружения DATABASE_URL")
+    engine = create_engine(url)
+    ctx = m.ETLContext(engine=engine, csv_path=path)
+    db_loader.loader(ctx)
+    engine.dispose()
     logger.info("Остановка ETL приложения")
 
 

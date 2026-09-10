@@ -1,4 +1,4 @@
-# config.py
+# # etl_project.config.py
 from pathlib import Path
 from dotenv import dotenv_values
 import logging
