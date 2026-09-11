@@ -8,6 +8,7 @@ from etl_project import db_loader
 import etl_project.models as m
 from etl_project.decorators import isolated_process
 from etl_project.config import AppConfig
+from etl_project.process_json import get_dict
 from sqlalchemy import create_engine
 
 DEFAULTS = {}
@@ -73,10 +74,17 @@ def main():
     process_csv_data()
     path = f'{conf.get("BASE_DIR")}\\{conf.get("csv_file")}'
     url = conf.get("DATABASE_URL")
+    json_path = f'{conf.get("BASE_DIR")}\\{conf.get("DTYPE_SCHEMA_PATH")}'
+    dtype_dict = get_dict(json_path)
+    print(dtype_dict)
     if not url:
         raise ValueError("Отсутствует переменная окружения DATABASE_URL")
     engine = create_engine(url)
-    ctx = m.ETLContext(engine=engine, csv_path=path)
+    ctx = m.ETLContext(
+        engine=engine,
+        csv_path=path,
+        dtype_dict=dtype_dict
+    )
     db_loader.loader(ctx)
     engine.dispose()
     logger.info("Остановка ETL приложения")

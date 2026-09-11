@@ -37,11 +37,11 @@ def get_len(path):
         return sum(1 for _ in f) - 1
 
 
-def read_csv_to_df(file_path: str) ->pd.DataFrame:
+def read_csv_to_df(file_path: str, dtype_dict: dict) ->pd.DataFrame:
     path = Path(file_path)
     print(f'путь до файла {path}')
     if not path.exists():
         raise FileNotFoundError("Файл не найден")
     if path.suffix.lower() != ".csv":
         raise ValueError("Формат отличается от ожидаемого csv")
-    return pd.read_csv(path)
+    return pd.read_csv(path, dtype=dtype_dict)
