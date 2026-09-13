@@ -15,12 +15,12 @@ def isolated_process(process_name: str):
             logger.info(f"Запуск процесса: {process_name}")
             try:
                 result = func(*args, **kwargs)
-                logger.info(f"Завершение процесса: {process_name}")
+                logger.info(f"Завершение процесса: {process_name}. Выполнено успешно.")
                 return result
             except Exception as e:
                 # logger.exception(f'{type(e).__name__}: {e}')
                 logger.error(
-                    f"Процесс {process_name} прерван.{type(e).__name__}: {e}. "
+                    f"Прервание процесса {process_name}.{type(e).__name__}: {e}. "
                     "Приложение продолжило работу."
                 )
             return None

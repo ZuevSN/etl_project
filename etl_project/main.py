@@ -50,7 +50,6 @@ def process_sample_data():
 @isolated_process("Загрузка, обработка, выгрузка csv")
 def process_csv_data():
     path = f'{conf.get("BASE_DIR")}\\{conf.get("csv_file")}'
-    print(f'обычная обработка файла {path}')
     logger.info(h.get_len(path))
     filters = [(f.minValue, "Age", 30), (f.maxValue, "Fare", 7)]
     filtered_passenger_data = h.get_rows(path, filters=filters)
@@ -72,14 +71,17 @@ def main():
     logger.info("Запуск ETL приложения")
     process_sample_data()
     process_csv_data()
+    logger.debug("Получаю основные переменные")
     path = f'{conf.get("BASE_DIR")}\\{conf.get("csv_file")}'
     url = conf.get("DATABASE_URL")
+    logger.debug("Получаю формат загружаемых данных")
     json_path = f'{conf.get("BASE_DIR")}\\{conf.get("DTYPE_SCHEMA_PATH")}'
     dtype_dict = get_dict(json_path)
-    print(dtype_dict)
+    logger.debug(dtype_dict)
     if not url:
         raise ValueError("Отсутствует переменная окружения DATABASE_URL")
     engine = create_engine(url)
+    logger.debug("Формирую контекст для ETL")
     ctx = m.ETLContext(
         engine=engine,
         csv_path=path,
