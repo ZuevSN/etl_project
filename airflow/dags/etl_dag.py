@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import sys
+
 sys.path.insert(0, "/opt/airflow")
 from airflow import DAG
 from airflow.decorators import task
@@ -9,7 +10,6 @@ from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import etl_project.models as m
 import etl_project.db_loader as loader
-
 
 
 def _get_etl_context():
