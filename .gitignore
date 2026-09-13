@@ -45,3 +45,6 @@ logs/
 
 # Docker volumes (если используются локально)
 postgres_data/
+
+# Логи Airflow
+airflow/logs/

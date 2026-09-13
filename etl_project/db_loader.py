@@ -7,6 +7,7 @@ from etl_project.decorators import isolated_process
 
 logger = logging.getLogger(__name__)
 
+
 @isolated_process("Тест подключения к базе")
 def test_connection(ctx):
     try:
@@ -20,18 +21,21 @@ def test_connection(ctx):
         logger.error(f"Ошибка подключения к БД. Детали: {e}", exc_info=True)
         raise Exception("Ошибка подключения к БД") from e
 
+
 @isolated_process("Загрузка сырых данных")
 def load_raw_data(ctx):
     logger.debug("Читаю csv в pandas dataframe")
     df = h.read_csv_to_df(ctx.csv_path, ctx.dtype_dict)
     logger.debug("Привожу колонки к нормальному виду")
     df = normalize_column(df)
-    df.to_sql('raw_data',con=ctx.engine, if_exists='replace', index=False)
+    df.to_sql("raw_data", con=ctx.engine, if_exists="replace", index=False)
+
 
 @isolated_process("Создание индекса на Age")
 def create_index_age(ctx):
     with ctx.engine.begin() as conn:
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_age ON raw_data (Age)"))
+
 
 @isolated_process("Загрузка преобразованных даных")
 def transform_data(ctx):
@@ -43,20 +47,17 @@ def transform_data(ctx):
             FROM raw_data
             WHERE Age = :age
 """
-        conn.execute(text(query), {'multiplier':ctx.multiplier,'age':ctx.age})
+        conn.execute(text(query), {"multiplier": ctx.multiplier, "age": ctx.age})
 
-# приводим имена к колонок стандартному виду 
+
+# приводим имена к колонок стандартному виду
 # убираем прбелы по краям
 # переводим в нижний регистр
 # заменяем пробелы внутри на подчеркивание
 def normalize_column(df):
-    df.columns = (
-        df.columns
-        .str.strip()
-        .str.lower()
-        .str.replace(r'\s+', '_', regex=True)
-    )
+    df.columns = df.columns.str.strip().str.lower().str.replace(r"\s+", "_", regex=True)
     return df
+
 
 @isolated_process("Загрузчик")
 def loader(ctx):
@@ -64,6 +65,7 @@ def loader(ctx):
         load_raw_data(ctx)
         create_index_age(ctx)
         transform_data(ctx)
+
 
 if __name__ == "__main__":
     logging.basicConfig(

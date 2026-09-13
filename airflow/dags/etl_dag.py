@@ -2,7 +2,7 @@
 from datetime import datetime
 import sys
 
-sys.path.insert(0,'/opt/airflow')
+sys.path.insert(0, "/opt/airflow")
 
 from airflow import DAG
 from airflow.decorators import task
@@ -15,30 +15,24 @@ import etl_project.models as m
 
 import etl_project.db_loader as loader
 
+
 def _get_etl_context():
-    csv_path = Variable.get('etl_csv_path')
-    dtype_dict = Variable.get(
-        'csv_dtype_map',
-        default_var='{}',
-        deserialize_json=True
-        )
-    hook = PostgresHook(postgres_conn_id='etl_postgres')
+    csv_path = Variable.get("etl_csv_path")
+    dtype_dict = Variable.get("csv_dtype_map", default_var="{}", deserialize_json=True)
+    hook = PostgresHook(postgres_conn_id="etl_postgres")
     engine = hook.get_sqlalchemy_engine()
-    ctx = m.ETLContext(
-         engine=engine,
-        csv_path=csv_path,
-        dtype_dict=dtype_dict
-    )
+    ctx = m.ETLContext(engine=engine, csv_path=csv_path, dtype_dict=dtype_dict)
     return ctx
 
+
 with DAG(
-    dag_id='etl_pipeline',
+    dag_id="etl_pipeline",
     start_date=datetime(2026, 1, 1),
-    schedule='0 2 * * *',  # Стало (каждый день в 02:00 по времени сервера)
+    schedule="0 2 * * *",  # Стало (каждый день в 02:00 по времени сервера)
     catchup=False,  # Не запускать пропущенные дни
-    tags=['etl', 'learning'],
+    tags=["etl", "learning"],
 ) as dag:
-    
+
     # "классический" способ объявления задачи в Airflow
     """
         task_load = PythonOperator(
@@ -46,7 +40,7 @@ with DAG(
         python_callable=run_loader,
     )
     """
-    
+
     @task
     def load_raw_data():
         ctx = _get_etl_context()
@@ -63,5 +57,5 @@ with DAG(
             loader.transform_data(ctx)
         finally:
             ctx.engine.dispose()
-    
+
     load_raw_data() >> transform_data()

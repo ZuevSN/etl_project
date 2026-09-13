@@ -32,5 +32,6 @@ exclude = '''
     \.git
     | \.venv
     | __pycache__
+    | airflow/logs
 )/
 '''

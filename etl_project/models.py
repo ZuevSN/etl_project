@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from sqlalchemy.engine import Engine
 from typing import Optional
 
+
 # структура для хранения данных контекста ETL
 @dataclass
 class ETLContext:

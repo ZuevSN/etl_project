@@ -82,11 +82,7 @@ def main():
         raise ValueError("Отсутствует переменная окружения DATABASE_URL")
     engine = create_engine(url)
     logger.debug("Формирую контекст для ETL")
-    ctx = m.ETLContext(
-        engine=engine,
-        csv_path=path,
-        dtype_dict=dtype_dict
-    )
+    ctx = m.ETLContext(engine=engine, csv_path=path, dtype_dict=dtype_dict)
     db_loader.loader(ctx)
     engine.dispose()
     logger.info("Остановка ETL приложения")
