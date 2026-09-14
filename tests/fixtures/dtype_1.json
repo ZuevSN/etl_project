@@ -1,0 +1,6 @@
+{
+    "Passenger Id": "int64",
+    "Survived ": "int8",
+    " Pclass": "int8",
+    "Name": "str"
+}

@@ -56,12 +56,12 @@ def process_csv_data():
     h.write_file("filtered_tested.csv", filtered_passenger_data)
     fixed_passenger_data = h.get_rows(path)
     for row in fixed_passenger_data:
-        fare = to_float(row["Fare"])
+        fare = safe_float(row["Fare"])
         row["Tax"] = fare * 0.2
     h.write_file("tested111.csv", fixed_passenger_data)
 
 
-def to_float(value):
+def safe_float(value):
     return (
         value if isinstance(value, (float, int)) and not isinstance(value, bool) else 0
     )
