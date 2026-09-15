@@ -10,6 +10,7 @@ from etl_project.decorators import isolated_process
 from etl_project.config import AppConfig
 from etl_project.process_json import get_dict
 from sqlalchemy import create_engine
+from pathlib import Path
 
 DEFAULTS = {}
 
@@ -27,7 +28,9 @@ def do_list(n):
 
 
 def is_even(num):
-    return num % 2 == 0
+    if isinstance(num,int) and not isinstance(num,bool):
+        return num % 2 == 0
+    else: return False
 
 
 def sqr_list(my_list):
@@ -69,13 +72,27 @@ def safe_float(value):
 
 def main():
     logger.info("Запуск ETL приложения")
-    process_sample_data()
-    process_csv_data()
     logger.debug("Получаю основные переменные")
-    path = f'{conf.get("BASE_DIR")}\\{conf.get("csv_file")}'
+    base_dir = conf.get("BASE_DIR")
+    csv_file = conf.get("csv_file")
+    if not csv_file:
+        raise ValueError("csv_file is None value")
+    csv_path = Path(base_dir) / csv_file
+    if not csv_path.is_file():
+        raise FileNotFoundError(f"The file {csv_path} does not exist.")
     url = conf.get("DATABASE_URL")
+    if not url:
+        raise ValueError("url is None value")
+    process_sample_data()
+    process_csv_data(csv_path)
+
     logger.debug("Получаю формат загружаемых данных")
-    json_path = f'{conf.get("BASE_DIR")}\\{conf.get("DTYPE_SCHEMA_PATH")}'
+    dtype_file = conf.get("DTYPE_SCHEMA_PATH")
+    if not dtype_file:
+        raise ValueError("dtype_file is None value")
+    json_path = Path(base_dir) / dtype_file
+    if not json_path.is_file():
+        raise FileNotFoundError(f"The file {json_path} does not exist.")
     dtype_dict = get_dict(json_path)
     logger.debug(dtype_dict)
     if not url:
