@@ -12,7 +12,7 @@ class ETLContext:
     engine: Engine
     csv_path: str
     dtype_dict: dict
-    age: int = 30
+    age: int
     multiplier: float = 0.2
     # 2 Опциональные поля для будующего расширения(не ломают старый код)
     # нужно им сделать значение по умолчанию и тогда для старых объектов
