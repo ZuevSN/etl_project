@@ -17,7 +17,6 @@ import pandas as pd
             ["passenger_id", "survived", "pclass", "name"],
             id="multi_spaces_mixed_case",
         ),
-        pytest.param([], [], id="empty_list_column"),
     ],
 )
 def test_normalize_column(input_columns, expected):

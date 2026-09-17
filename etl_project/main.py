@@ -9,7 +9,8 @@ import etl_project.models as m
 from etl_project.decorators import isolated_process
 from etl_project.config import AppConfig
 from etl_project.process_json import get_dict
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.engine import Engine
 from pathlib import Path
 
 DEFAULTS = {}
@@ -72,7 +73,7 @@ def safe_float(value: float | int | str | None) -> float:
 def validate_values(csv_file: str, url: str, dtype_file: str, age: int) -> None:
     if not csv_file:
         raise ValueError("csv_file is empty or None")
-    if not url.startswith(("postgresql://",)):
+    if not url.startswith(("postgresql://", "postgresql+psycopg2://")):
         raise ValueError(f"Unsupported database URL {url}")
     if not dtype_file:
         raise ValueError("dtype_file is empty or None")
@@ -88,7 +89,8 @@ def is_valid_file(path: str | Path) -> Path:
         raise ValueError(f"The file {result_path} is empty")
     return result_path
 
-def check_db_connection(engine):
+
+def check_db_connection(engine: Engine) -> None:
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
@@ -96,6 +98,7 @@ def check_db_connection(engine):
     except Exception as e:
         logger.error(f"Ошибка подключения к БД. Детали: {e}", exc_info=True)
         raise ConnectionError("Не удалось подключиться к БД {e}") from e
+
 
 def main():
     logger.info("Запуск ETL приложения")
@@ -118,6 +121,7 @@ def main():
     logger.debug(dtype_dict)
     logger.debug("Создаю соединение")
     engine = create_engine(url)
+    check_db_connection(engine)
     logger.debug("Формирую контекст для ETL")
     ctx = m.ETLContext(engine=engine, csv_path=csv_path, dtype_dict=dtype_dict, age=age)
     logger.debug("Выполняю загрузку ETLContext")

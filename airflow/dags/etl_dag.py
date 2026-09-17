@@ -10,14 +10,45 @@ from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import etl_project.models as m
 import etl_project.db_loader as loader
+from pathlib import Path
+from sqlalchemy.engine import Engine
+from sqlalchemy import text
+
+
+def validate_values(csv_file: str, age: int) -> None:
+    if not csv_file:
+        raise ValueError("csv_file is empty or None")
+    if age < 0:
+        raise ValueError("age should not be negative")
+
+
+def is_valid_file(path: str | Path) -> Path:
+    result_path = Path(path)
+    if not result_path.is_file():
+        raise FileNotFoundError(f"The file {result_path} does not exist.")
+    if result_path.stat().st_size == 0:
+        raise ValueError(f"The file {result_path} is empty")
+    return result_path
+
+
+def check_db_connection(engine: Engine) -> None:
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except Exception as e:
+        raise ConnectionError("Не удалось подключиться к БД {e}") from e
 
 
 def _get_etl_context():
     csv_path = Variable.get("etl_csv_path")
     dtype_dict = Variable.get("csv_dtype_map", default_var="{}", deserialize_json=True)
     hook = PostgresHook(postgres_conn_id="etl_postgres")
+    age = 30
+    validate_values(csv_path, age)
+    csv_path = is_valid_file(csv_path)
     engine = hook.get_sqlalchemy_engine()
-    ctx = m.ETLContext(engine=engine, csv_path=csv_path, dtype_dict=dtype_dict)
+    check_db_connection(engine)
+    ctx = m.ETLContext(engine=engine, csv_path=csv_path, dtype_dict=dtype_dict, age=age)
     return ctx
 
 

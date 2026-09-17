@@ -58,3 +58,6 @@ jobs:
           tags: etl_project_test:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Test with Pytest
+        run: poetry run pytest
