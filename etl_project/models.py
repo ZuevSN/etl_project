@@ -1,7 +1,7 @@
 # etl_project.models.py
 
 from dataclasses import dataclass
-from sqlalchemy.engine import Engine
+import sqlalchemy.engine as sa_engine
 from typing import Optional
 
 
@@ -9,7 +9,7 @@ from typing import Optional
 @dataclass
 class ETLContext:
     # 1 Обязательные поля для контекста
-    engine: Engine
+    engine: sa_engine.Engine
     csv_path: str
     dtype_dict: dict
     age: int

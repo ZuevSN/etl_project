@@ -10,7 +10,7 @@ from etl_project.decorators import isolated_process
 from etl_project.config import AppConfig
 from etl_project.process_json import get_dict
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine
+import sqlalchemy.engine as sa_engine
 from pathlib import Path
 
 DEFAULTS = {}
@@ -59,14 +59,18 @@ def process_csv_data(path: Path, minAge: int = 30, maxFare: float = 7) -> None:
     h.write_file("filtered_tested.csv", filtered_passenger_data)
     fixed_passenger_data = h.get_rows(path)
     for row in fixed_passenger_data:
-        fare = safe_float(row["Fare"])
+        fare = get_float_or_default(row["Fare"])
         row["Tax"] = fare * 0.2
     h.write_file("tested111.csv", fixed_passenger_data)
 
 
-def safe_float(value: float | int | str | None) -> float:
+def get_float_or_default(
+    value: float | int | str | None, default: float = 0.0
+) -> float:
     return (
-        value if isinstance(value, (float, int)) and not isinstance(value, bool) else 0
+        value
+        if isinstance(value, (float, int)) and not isinstance(value, bool)
+        else default
     )
 
 
@@ -90,7 +94,7 @@ def is_valid_file(path: str | Path) -> Path:
     return result_path
 
 
-def check_db_connection(engine: Engine) -> None:
+def check_db_connection(engine: sa_engine.Engine) -> None:
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))

@@ -4,7 +4,7 @@ from sqlalchemy import text
 import etl_project.csv_handler as h
 import logging
 from etl_project.decorators import isolated_process
-from pandas import DataFrame
+import pandas as pd
 from etl_project.models import ETLContext
 
 logger = logging.getLogger(__name__)
@@ -58,7 +58,7 @@ def transform_data(ctx: ETLContext) -> None:
 # убираем прбелы по краям
 # переводим в нижний регистр
 # заменяем пробелы внутри на подчеркивание
-def normalize_column(df: DataFrame) -> DataFrame:
+def normalize_column(df: pd.DataFrame) -> pd.DataFrame:
     df.columns = df.columns.str.strip().str.lower().str.replace(r"\s+", "_", regex=True)
     return df
 

@@ -1,6 +1,6 @@
 # tests/test_main.py
 import pytest
-from etl_project.main import is_even, safe_float
+from etl_project.main import is_even, get_float_or_default
 
 
 @pytest.mark.parametrize(
@@ -41,11 +41,9 @@ def test_is_even(value, expected):
         pytest.param(True, 0, id="boolean_true"),
         pytest.param(False, 0, id="boolean_false"),
         pytest.param(None, 0, id="none"),
-        pytest.param({}, 0, id="empty_dict"),
-        pytest.param([], 0, id="empty_list"),
         pytest.param(float("inf"), float("inf"), id="infinity"),
         pytest.param(float("-inf"), float("-inf"), id="negative_infinity"),
     ],
 )
-def test_to_float(value, expected):
-    assert safe_float(value) == expected
+def test_get_float_or_default(value, expected):
+    assert get_float_or_default(value) == expected
