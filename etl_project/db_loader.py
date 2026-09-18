@@ -37,9 +37,16 @@ def load_raw_data(ctx: ETLContext) -> None:
 
 @isolated_process("Создание индекса на Age")
 def create_index_age(ctx: ETLContext) -> None:
+    query = """
+        EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) 
+        SELECT * FROM raw_data WHERE age = :age
+"""
     with ctx.engine.begin() as conn:
         conn.execute(text("CREATE INDEX IF NOT EXISTS idx_age ON raw_data (Age)"))
-
+        result = conn.execute(text(query), {"age": 76})
+        explain_output = result.fetchall()
+        for row in explain_output:
+            logger.info(row[0])
 
 @isolated_process("Загрузка преобразованных даных")
 def transform_data(ctx: ETLContext) -> None:
@@ -47,9 +54,15 @@ def transform_data(ctx: ETLContext) -> None:
         conn.execute(text("DROP TABLE IF EXISTS processed_data"))
         query = """
             CREATE TABLE processed_data AS
-            SELECT *, Fare * :multiplier as Tax
+            WITH RANKED_DATA AS (
+            SELECT *, RANK()  OVER (PARTITION BY Pclass
+            ORDER BY Fare DESC) as fare_rank
             FROM raw_data
             WHERE Age = :age
+            )
+            SELECT *, Fare * :multiplier as Tax
+            from RANKED_DATA
+            where fare_rank <= 3
 """
         conn.execute(text(query), {"multiplier": ctx.multiplier, "age": ctx.age})
 
