@@ -1,6 +1,6 @@
 # airflow.dags.etl_dag.py
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import sys
 
 sys.path.insert(0, "/opt/airflow")
@@ -13,6 +13,16 @@ import etl_project.db_loader as loader
 from pathlib import Path
 from sqlalchemy.engine import Engine
 from sqlalchemy import text
+import logging
+
+logger = logging.getLogger(__name__)
+
+def alert_on_failure(context):
+    task_id = context["task_instance"].task_id
+    dag_id = context["dag"].dag_id
+    exception = context["exception"]
+
+    logging.error(f"ALERT: {dag_id}.{task_id} failed with {exception}")
 
 
 def validate_values(csv_file: str, age: int) -> None:
@@ -36,7 +46,7 @@ def check_db_connection(engine: Engine) -> None:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
     except Exception as e:
-        raise ConnectionError("Не удалось подключиться к БД {e}") from e
+        raise ConnectionError(f"Не удалось подключиться к БД {e}") from e
 
 
 def _get_etl_context():
@@ -57,6 +67,11 @@ with DAG(
     start_date=datetime(2026, 1, 1),
     schedule="0 2 * * *",  # Стало (каждый день в 02:00 по времени сервера)
     catchup=False,  # Не запускать пропущенные дни
+    default_args={
+        "retries": 2,
+        "retry_delay": timedelta(minutes=5),
+        "on_failure_callback": alert_on_failure,
+    },
     tags=["etl", "learning"],
 ) as dag:
 
@@ -67,22 +82,26 @@ with DAG(
         python_callable=run_loader,
     )
     """
-
-    @task
+    # переопределяем параметры DAG при сбоях, на новые
+    @task(retries=3, retry_delay=timedelta(minutes=10))
     def load_raw_data():
         ctx = _get_etl_context()
         try:
-            loader.load_raw_data(ctx)
+            DFLength = loader.load_raw_data(ctx)
             loader.create_index_age(ctx)
+            return {"row_count": DFLength}
         finally:
             ctx.engine.dispose()
 
     @task
-    def transform_data():
+    def transform_data(metadata: dict):
         ctx = _get_etl_context()
         try:
+            logging.info(f"Transforming {metadata['row_count']} rows")
+            if metadata["row_count"] == 0:
+                raise ValueError("No data for transform")
             loader.transform_data(ctx)
         finally:
             ctx.engine.dispose()
 
-    load_raw_data() >> transform_data()
+    transform_data(load_raw_data())

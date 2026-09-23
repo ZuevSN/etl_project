@@ -11,6 +11,7 @@ sqlalchemy = "^2.0.52"
 psycopg2-binary = "^2.9.12"
 pandas = "^3.0.5"
 python-dotenv = "^1.2.3"
+tenacity = "^9.1.4"
 
 
 [tool.poetry.group.dev.dependencies]

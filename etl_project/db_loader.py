@@ -1,11 +1,14 @@
 # etl_project.db_loader.py
 
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 import etl_project.csv_handler as h
 import logging
 from etl_project.decorators import isolated_process
 import pandas as pd
 from etl_project.models import ETLContext
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +28,12 @@ def test_connection(ctx: ETLContext) -> None:
 
 
 @isolated_process("Загрузка сырых данных")
-def load_raw_data(ctx: ETLContext) -> None:
+@retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type((ConnectionError, OperationalError, OSError, TimeoutError))
+)
+def load_raw_data(ctx: ETLContext) -> int:
     logger.debug("Читаю csv в pandas dataframe")
     df = h.read_csv_to_df(ctx.csv_path, ctx.dtype_dict)
     if df.empty:
@@ -33,9 +41,15 @@ def load_raw_data(ctx: ETLContext) -> None:
     logger.debug("Привожу колонки к нормальному виду")
     df = normalize_column(df)
     df.to_sql("raw_data", con=ctx.engine, if_exists="replace", index=False)
+    return len(df)
 
 
 @isolated_process("Создание индекса на Age")
+@retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type((ConnectionError, OperationalError, OSError, TimeoutError))
+)
 def create_index_age(ctx: ETLContext) -> None:
     query = """
         EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) 
@@ -49,6 +63,11 @@ def create_index_age(ctx: ETLContext) -> None:
             logger.info(row[0])
 
 @isolated_process("Загрузка преобразованных даных")
+@retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=1, max=10),
+        retry=retry_if_exception_type((ConnectionError, OperationalError, OSError, TimeoutError))
+)
 def transform_data(ctx: ETLContext) -> None:
     with ctx.engine.begin() as conn:
         conn.execute(text("DROP TABLE IF EXISTS processed_data"))
@@ -56,13 +75,13 @@ def transform_data(ctx: ETLContext) -> None:
             CREATE TABLE processed_data AS
             WITH RANKED_DATA AS (
             SELECT *, RANK()  OVER (PARTITION BY Pclass
-            ORDER BY Fare DESC) as fare_rank
+            ORDER BY Fare DESC) as fare_rank_in_class
             FROM raw_data
             WHERE Age = :age
             )
             SELECT *, Fare * :multiplier as Tax
             from RANKED_DATA
-            where fare_rank <= 3
+            where fare_rank_in_class <= 3
 """
         conn.execute(text(query), {"multiplier": ctx.multiplier, "age": ctx.age})
 
