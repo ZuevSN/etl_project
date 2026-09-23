@@ -12,7 +12,12 @@ from etl_project.process_json import get_dict
 from sqlalchemy import create_engine, text
 import sqlalchemy.engine as sa_engine
 from pathlib import Path
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 DEFAULTS = {}
 
@@ -94,10 +99,11 @@ def is_valid_file(path: str | Path) -> Path:
         raise ValueError(f"The file {result_path} is empty")
     return result_path
 
+
 @retry(
-        stop=stop_after_attempt(1),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type((ConnectionError))
+    stop=stop_after_attempt(1),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type((ConnectionError)),
 )
 def check_db_connection(engine: sa_engine.Engine) -> None:
     try:

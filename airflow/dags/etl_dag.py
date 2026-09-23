@@ -17,6 +17,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def alert_on_failure(context):
     task_id = context["task_instance"].task_id
     dag_id = context["dag"].dag_id
@@ -82,6 +83,7 @@ with DAG(
         python_callable=run_loader,
     )
     """
+
     # переопределяем параметры DAG при сбоях, на новые
     @task(retries=3, retry_delay=timedelta(minutes=10))
     def load_raw_data():

@@ -7,8 +7,12 @@ import logging
 from etl_project.decorators import isolated_process
 import pandas as pd
 from etl_project.models import ETLContext
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -29,9 +33,11 @@ def test_connection(ctx: ETLContext) -> None:
 
 @isolated_process("Загрузка сырых данных")
 @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type((ConnectionError, OperationalError, OSError, TimeoutError))
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type(
+        (ConnectionError, OperationalError, OSError, TimeoutError)
+    ),
 )
 def load_raw_data(ctx: ETLContext) -> int:
     logger.debug("Читаю csv в pandas dataframe")
@@ -46,13 +52,15 @@ def load_raw_data(ctx: ETLContext) -> int:
 
 @isolated_process("Создание индекса на Age")
 @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type((ConnectionError, OperationalError, OSError, TimeoutError))
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type(
+        (ConnectionError, OperationalError, OSError, TimeoutError)
+    ),
 )
 def create_index_age(ctx: ETLContext) -> None:
     query = """
-        EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT) 
+        EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)
         SELECT * FROM raw_data WHERE age = :age
 """
     with ctx.engine.begin() as conn:
@@ -62,11 +70,14 @@ def create_index_age(ctx: ETLContext) -> None:
         for row in explain_output:
             logger.info(row[0])
 
+
 @isolated_process("Загрузка преобразованных даных")
 @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=1, max=10),
-        retry=retry_if_exception_type((ConnectionError, OperationalError, OSError, TimeoutError))
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=1, max=10),
+    retry=retry_if_exception_type(
+        (ConnectionError, OperationalError, OSError, TimeoutError)
+    ),
 )
 def transform_data(ctx: ETLContext) -> None:
     with ctx.engine.begin() as conn:
