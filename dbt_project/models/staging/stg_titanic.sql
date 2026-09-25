@@ -7,7 +7,7 @@ renamed_and_casted AS (
         CAST("survived" AS INTEGER) AS survived,
         CAST("pclass" AS INTEGER) AS pclass,
         CAST("name" AS VARCHAR) AS passenger_name,
-        CAST("sex" AS VARCHAR) AS sex,
+        CAST("sex" AS VARCHAR) AS gender,
         COALESCE(CAST("age" AS FLOAT), 0.0) AS age,
         CAST("sibsp" AS INTEGER) AS siblings_spouces_count,
         CAST("parch" AS INTEGER) AS parents_children_count,

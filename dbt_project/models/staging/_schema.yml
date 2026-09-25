@@ -1,3 +1,4 @@
+# dbt_project_models.staging._schema.yml
 version: 2
 
 models:
@@ -19,33 +20,35 @@ models:
         data_tests:
           - accepted_values:
               values: [1, 2, 3]
-      - name: Name
+      - name: passenger_name
         description: "Passenger name"
-      - name: Sex
+      - name: gender
         description: "Sex (male/female)"
         data_tests:
           - accepted_values:
               values: ['male', 'female']
-      - name: Age
+      - name: age
         description: "Passenger age"
         data_tests:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
-      - name: Sibsp
+      - name: siblings_spouces_count
         description: "Siblings/Spouses Aboard"
-      - name: Parch
+      - name: parents_children_count
         description: "Parents/Children Aboard"
-      - name: Ticket
+      - name: ticket
         description: "Ticket number"
-      - name: Fare
-        description: "Ticket fare"
+        data_tests:
+          - not_null
+      - name: fare
+        description: "Passenger fare"
         data_tests:
           - dbt_utils.expression_is_true:
               expression: ">= 0"
-      - name: Cabin
-        description: "Cabin"
+      - name: cabin
+        description: "Cabin number"
       - name: Embarked
-        description: "Embarked (C/Q/S)"
+        description: "Port of Embarkation (C = Cherbourg, Q = Queenstown,S = Southampton)"
         data_tests:
           - accepted_values:
               values: ['C', 'Q', 'S']

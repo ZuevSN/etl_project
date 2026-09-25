@@ -1,3 +1,4 @@
+# dbt_project.models.staging._sources.yml
 version: 2
 
 sources:
@@ -8,28 +9,28 @@ sources:
       - name: raw_data
         description: "Raw Titanic passenger data"
         columns:
-          - name: PassengerId
+          - name: passengerId
             description: "Passenger identifer"
-          - name: Survived
+          - name: survived
             description: "Survival status (0 = No, 1 = Yes)"
-          - name: Pclass
+          - name: pclass
             description: "Ticket class (1 = 1st, 2 = 2nd, 3 = 3rd)"
-          - name: Name
+          - name: name
             description: "Passenger name"
-          - name: Sex
+          - name: sex
             description: "Sex (male/female)"
-          - name: Age
+          - name: age
             description: "Passenger age"
-          - name: Sibsp
+          - name: sibsp
             description: "Siblings/Spouses Aboard"
-          - name: Parch
+          - name: parch
             description: "Parents/Children Aboard"
-          - name: Ticket
+          - name: ticket
             description: "Ticket number"
-          - name: Fare
+          - name: fare
             description: "Ticket fare"
-          - name: Cabin
+          - name: cabin
             description: "Cabin"
-          - name: Embarked
+          - name: embarked
             description: "Embarked (C/Q/S)"
           
