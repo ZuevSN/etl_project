@@ -23,7 +23,7 @@ def alert_on_failure(context):
     dag_id = context["dag"].dag_id
     exception = context["exception"]
 
-    logging.error(f"ALERT: {dag_id}.{task_id} failed with {exception}")
+    logger.error(f"ALERT: {dag_id}.{task_id} failed with {exception}")
 
 
 def validate_values(csv_file: str, age: int) -> None:
@@ -47,7 +47,7 @@ def check_db_connection(engine: Engine) -> None:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
     except Exception as e:
-        raise ConnectionError(f"Не удалось подключиться к БД {e}") from e
+        raise ConnectionError(f"Не удалось подключиться к БД: {e}") from e
 
 
 def _get_etl_context():
@@ -89,9 +89,9 @@ with DAG(
     def load_raw_data():
         ctx = _get_etl_context()
         try:
-            DFLength = loader.load_raw_data(ctx)
+            row_count = loader.load_raw_data(ctx)
             loader.create_index_age(ctx)
-            return {"row_count": DFLength}
+            return {"row_count": row_count}
         finally:
             ctx.engine.dispose()
 
@@ -99,7 +99,7 @@ with DAG(
     def transform_data(metadata: dict):
         ctx = _get_etl_context()
         try:
-            logging.info(f"Transforming {metadata['row_count']} rows")
+            logger.info(f"Transforming {metadata['row_count']} rows")
             if metadata["row_count"] == 0:
                 raise ValueError("No data for transform")
             loader.transform_data(ctx)

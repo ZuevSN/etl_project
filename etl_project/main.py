@@ -18,6 +18,7 @@ from tenacity import (
     wait_exponential,
     retry_if_exception_type,
 )
+from sqlalchemy.engine.url import URL
 
 DEFAULTS = {}
 
@@ -80,11 +81,9 @@ def get_float_or_default(
     )
 
 
-def validate_values(csv_file: str, url: str, dtype_file: str, age: int) -> None:
+def validate_values(csv_file: str, dtype_file: str, age: int) -> None:
     if not csv_file:
         raise ValueError("csv_file is empty or None")
-    if not url.startswith(("postgresql://", "postgresql+psycopg2://")):
-        raise ValueError(f"Unsupported database URL {url}")
     if not dtype_file:
         raise ValueError("dtype_file is empty or None")
     if age < 0:
@@ -120,11 +119,18 @@ def main():
     logger.debug("Получаю основные переменные")
     base_dir = conf.get("BASE_DIR")
     csv_file = conf.get("csv_file")
-    url = conf.get("DATABASE_URL")
+    db_url = URL.create(
+        drivername=conf.get("DB_DRIVERNAME"),
+        username=conf.get("DB_USER"),
+        password=conf.get("DB_PASSWORD"),
+        host=conf.get("DB_HOST"),
+        port=conf.get("DB_PORT"),
+        database=conf.get("DB_NAME"),
+    )
     dtype_file = conf.get("DTYPE_SCHEMA_PATH")
     age = 30
     logger.debug("Проверяю корректность входных переменных")
-    validate_values(csv_file, url, dtype_file, age)
+    validate_values(csv_file, dtype_file, age)
     logger.debug("Проверяю корректность пути к csv")
     csv_path = is_valid_file(base_dir / csv_file)
     process_sample_data()
@@ -135,7 +141,7 @@ def main():
     dtype_dict = get_dict(dtype_path)
     logger.debug(dtype_dict)
     logger.debug("Создаю соединение")
-    engine = create_engine(url)
+    engine = create_engine(db_url)
     check_db_connection(engine)
     logger.debug("Формирую контекст для ETL")
     ctx = m.ETLContext(engine=engine, csv_path=csv_path, dtype_dict=dtype_dict, age=age)

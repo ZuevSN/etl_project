@@ -85,12 +85,12 @@ def transform_data(ctx: ETLContext) -> None:
         query = """
             CREATE TABLE processed_data AS
             WITH RANKED_DATA AS (
-            SELECT *, RANK()  OVER (PARTITION BY Pclass
-            ORDER BY Fare DESC) as fare_rank_in_class
+            SELECT *, RANK()  OVER (PARTITION BY pclass
+            ORDER BY fare DESC) as fare_rank_in_class
             FROM raw_data
-            WHERE Age = :age
+            WHERE age = :age
             )
-            SELECT *, Fare * :multiplier as Tax
+            SELECT *, fare * :multiplier as tax
             from RANKED_DATA
             where fare_rank_in_class <= 3
 """

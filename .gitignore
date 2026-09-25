@@ -48,3 +48,12 @@ postgres_data/
 
 # Логи Airflow
 airflow/logs/
+
+# dbt
+dbt_project/profiles.yml
+
+# dbt artifacts
+dbt_project/dbt_packages/
+dbt_project/target/
+dbt_project/logs/
+dbt_project/.user.yml

@@ -1,0 +1,35 @@
+version: 2
+
+sources:
+  - name: titanic_raw
+    description: "raw data loaded by Python ETL script"
+    schema: public
+    tables:
+      - name: raw_data
+        description: "Raw Titanic passenger data"
+        columns:
+          - name: PassengerId
+            description: "Passenger identifer"
+          - name: Survived
+            description: "Survival status (0 = No, 1 = Yes)"
+          - name: Pclass
+            description: "Ticket class (1 = 1st, 2 = 2nd, 3 = 3rd)"
+          - name: Name
+            description: "Passenger name"
+          - name: Sex
+            description: "Sex (male/female)"
+          - name: Age
+            description: "Passenger age"
+          - name: Sibsp
+            description: "Siblings/Spouses Aboard"
+          - name: Parch
+            description: "Parents/Children Aboard"
+          - name: Ticket
+            description: "Ticket number"
+          - name: Fare
+            description: "Ticket fare"
+          - name: Cabin
+            description: "Cabin"
+          - name: Embarked
+            description: "Embarked (C/Q/S)"
+          

@@ -10,6 +10,18 @@
          - postgres_data:/var/lib/postgresql/data
        networks:
          - etl_network
+     dbt:
+       image: ghcr.io/dbt-labs/dbt-postgres:1.8.latest
+       container_name: dbt
+       env_file:
+         - .env
+       volumes:
+         - ./dbt_project:/usr/app
+       working_dir: /usr/app
+       depends_on:
+         - etl_postgres
+       networks:
+         - etl_network
 
    volumes:
      postgres_data:
