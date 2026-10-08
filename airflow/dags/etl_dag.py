@@ -28,6 +28,7 @@ DBT_ENV = {
     "DBT_DBNAME": Variable.get("DBT_DBNAME"),
 }
 
+
 def alert_on_failure(context):
     task_id = context["task_instance"].task_id
     dag_id = context["dag"].dag_id
@@ -72,10 +73,12 @@ def _get_etl_context():
     ctx = m.ETLContext(engine=engine, csv_path=csv_path, dtype_dict=dtype_dict, age=age)
     return ctx
 
-import os
 
-# Читаем путь хоста из .env. Если переменной нет, фоллбэк на путь внутри контейнера (для безопасности)
-DBT_PROJECT_HOST_PATH = os.environ.get("DBT_PROJECT_HOST_PATH", "/opt/airflow/dbt_project")
+# Читаем путь хоста из .env.
+# Если переменной нет, фоллбэк на путь внутри контейнера (для безопасности)
+DBT_PROJECT_HOST_PATH = os.environ.get(
+    "DBT_PROJECT_HOST_PATH", "/opt/airflow/dbt_project"
+)
 logger.info(f"DEBUG: DBT_PROJECT_HOST_PATH is set to: {DBT_PROJECT_HOST_PATH}")
 
 with DAG(
@@ -86,9 +89,9 @@ with DAG(
     default_args={
         "retries": 2,
         "retry_delay": timedelta(minutes=5),
-        #"on_failure_callback": alert_on_failure,
+        # "on_failure_callback": alert_on_failure,
     },
-    tags=["etl", "learning","dbt"],
+    tags=["etl", "learning", "dbt"],
 ) as dag:
 
     # "классический" способ объявления задачи в Airflow
@@ -111,45 +114,35 @@ with DAG(
             ctx.engine.dispose()
 
     dbt_run_task = DockerOperator(
-        task_id = 'dbt_run',
-        image='ghcr.io/dbt-labs/dbt-postgres:1.8.latest',
-        command=['run'],
-
-        #пробрасываем локальную папку с проектом внутрь контейнера dbt
-        #volumes=[f"{DBT_PROJECT_PATH}:/usr/app"],
+        task_id="dbt_run",
+        image="ghcr.io/dbt-labs/dbt-postgres:1.8.latest",
+        command=["run"],
+        # пробрасываем локальную папку с проектом внутрь контейнера dbt
+        # volumes=[f"{DBT_PROJECT_PATH}:/usr/app"],
         mounts=[
-            {
-                "type": "bind",
-                "source": DBT_PROJECT_HOST_PATH,
-                "target": "/usr/app"
-            }
+            {"type": "bind", "source": DBT_PROJECT_HOST_PATH, "target": "/usr/app"}
         ],
-        working_dir='/usr/app',
+        working_dir="/usr/app",
         environment=DBT_ENV,
-        network_mode='etl_network',
-        auto_remove='success',
+        network_mode="etl_network",
+        auto_remove="success",
         mount_tmp_dir=False,
     )
 
     dbt_test_task = DockerOperator(
-        task_id = 'dbt_test',
-        image='ghcr.io/dbt-labs/dbt-postgres:1.8.latest',
-        command=['test'],
-        #volumes=[f"{DBT_PROJECT_PATH}:/usr/app"],
+        task_id="dbt_test",
+        image="ghcr.io/dbt-labs/dbt-postgres:1.8.latest",
+        command=["test"],
+        # volumes=[f"{DBT_PROJECT_PATH}:/usr/app"],
         mounts=[
-            {
-                "type": "bind",
-                "source": DBT_PROJECT_HOST_PATH,
-                "target": "/usr/app"
-            }
+            {"type": "bind", "source": DBT_PROJECT_HOST_PATH, "target": "/usr/app"}
         ],
-        working_dir='/usr/app',
+        working_dir="/usr/app",
         environment=DBT_ENV,
-        network_mode='etl_network',
-        auto_remove='success',
+        network_mode="etl_network",
+        auto_remove="success",
         mount_tmp_dir=False,
     )
 
-
     load_raw_data() >> dbt_run_task >> dbt_test_task
-    #transform_data(load_raw_data())
+    # transform_data(load_raw_data())
