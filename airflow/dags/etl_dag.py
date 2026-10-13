@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, "/opt/airflow")
 from airflow import DAG
 from airflow.decorators import task
+from airflow.hooks.base import BaseHook
 from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 import etl_project.models as m
@@ -20,13 +21,22 @@ from airflow.providers.docker.operators.docker import DockerOperator
 
 logger = logging.getLogger(__name__)
 
-DBT_ENV = {
-    "DBT_USER": Variable.get("DBT_USER"),
-    "DBT_PASSWORD": Variable.get("DBT_PASSWORD"),
-    "DBT_HOST": Variable.get("DBT_HOST"),
-    "DBT_PORT": Variable.get("DBT_PORT"),
-    "DBT_DBNAME": Variable.get("DBT_DBNAME"),
-}
+
+def get_dbt_env() -> dict:
+    # В проде предпочитают делить подключения для разных функций
+    # потому dbt_postgres
+    conn = BaseHook.get_connection("dbt_postgres")
+    return {
+        "DBT_USER": conn.login,
+        # "DBT_PASSWORD": Variable.get("DBT_PASSWORD"),
+        "DBT_PASSWORD": conn.password,
+        "DBT_HOST": conn.host,
+        "DBT_PORT": str(conn.port),
+        "DBT_DBNAME": conn.schema,
+    }
+
+
+DBT_ENV = get_dbt_env()
 
 
 def alert_on_failure(context):
