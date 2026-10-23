@@ -1,0 +1,49 @@
+# dbt_project_models.marts.schema.yml
+version: 2
+
+models:
+  - name: dim_class
+    description: "Passenger service classes"
+    columns:
+      - name: pclass
+        description: "Unique class identifier (1, 2, 3)"
+        data_tests:
+          - unique
+          - not_null
+      - name: description_class
+        description: "Text description of class (1st, 2nd, 3rd classes)"
+  - name: dim_port
+    description: "Embarkation ports"
+    columns:
+      - name: embarked
+        description: "Unique identifier embarkation port(C, Q, S)"
+        data_tests:
+          - unique
+          - not_null
+      - name: description_embarked
+        description: "Embarkation port (Cherbourg, Queenstown, Southampton)"
+  - name: fct_survival_stats
+    description: "Aggregate survival statistics"
+    data_tests:
+    - dbt_utils.unique_combination_of_columns:
+        combination_of_columns:
+          - pclass
+          - embarked
+    columns:
+      - name: pclass
+        description: "Unique class identifier (1, 2, 3)"
+        data_tests:
+          - not_null
+      - name: embarked
+        description: "Unique identifier embarkation port(C, Q, S)"
+        data_tests:
+          - not_null
+      - name: total_passengers
+        description: "Total count of passengers for seed class and embarkation"
+      - name: survived_count
+        description: "Count of survived passengers for seed class and embarkation"
+      - name: avg_fare
+        description: "Average fare"
+      - name: survival_rate
+        description: "Survivorship ratio"
+

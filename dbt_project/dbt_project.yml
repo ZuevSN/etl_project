@@ -19,3 +19,5 @@ models:
   etl_project:
     staging:
       +materialized: table
+    marts:
+      +materialized: table

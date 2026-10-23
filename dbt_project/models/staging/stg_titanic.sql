@@ -3,7 +3,7 @@ WITH source_data AS (
 ),
 renamed_and_casted AS (
     SELECT
-        CAST("passengerid" AS INTEGER) AS passenger_id,
+        CAST("passenger_id" AS INTEGER) AS passenger_id,
         CAST("survived" AS INTEGER) AS survived,
         CAST("pclass" AS INTEGER) AS pclass,
         CAST("name" AS VARCHAR) AS passenger_name,

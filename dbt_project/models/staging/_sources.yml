@@ -9,7 +9,7 @@ sources:
       - name: raw_data
         description: "Raw Titanic passenger data"
         columns:
-          - name: passengerId
+          - name: passenger_id
             description: "Passenger identifer"
           - name: survived
             description: "Survival status (0 = No, 1 = Yes)"
